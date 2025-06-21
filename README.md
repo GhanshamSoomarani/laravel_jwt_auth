@@ -44,12 +44,65 @@ Tested using **Postman**, the API allows login, registration, and protects route
 ### 2️⃣ Install Dependencies
 First setup api then JWT
 ### 3️⃣🔧 Install JWT Package
-composer require tymon/jwt-auth
+    composer require tymon/jwt-auth
 #### 1. Publish the config:
-php artisan vendor:publish --provider="Tymon\JWTAuth\Providers\LaravelServiceProvider"
+    php artisan vendor:publish --provider="Tymon\JWTAuth\Providers\LaravelServiceProvider"
 
 #### 2. Generate JWT secret key:
-php artisan jwt:secret
+    php artisan jwt:secret
 #### 3. 🧑‍💻 Auth Routes
 
+    Route::group(['prefix' => 'auth'], function ($router) {
+        Route::post('login', [AuthController::class, 'login']);
+        Route::post('register', [AuthController::class, 'register']);
 
+    });
+
+    Route::middleware(['auth:api'])->group(function () {
+        Route::post('me', [AuthController::class, 'me']);
+        Route::post('logout', [AuthController::class, 'logout']);
+        Route::post('refresh', [AuthController::class, 'refresh']);
+    });
+
+### 4️⃣ 🧪 API Endpoints
+
+| **Method** | **Endpoint**       | **Description**        | **Auth Required**     |
+|------------|--------------------|------------------------|------------------------|
+| `POST`     | `/api/register`    | Register new user      | ❌ No                  |
+| `POST`     | `/api/login`       | Login user, get token  | ❌ No                  |
+| `GET`      | `/api/profile`     | Get user profile       | ✅ Bearer Token        |
+| `POST`     | `/api/logout`      | Logout user            | ✅ Bearer Token        |
+
+### 5️⃣🧪 Testing with Postman
+1. Register User
+
+URL: POST /api/register,
+
+Body (JSON):
+
+    {
+    "name": "Test User",
+    "email": "test@example.com",
+    "password": "password"
+    }
+2. Login
+URL: POST /api/login
+
+Body:
+
+    {
+    "email": "test@example.com",
+    "password": "password"
+    }
+
+Response:
+
+    {
+    "access_token": "your.jwt.token",
+    "token_type": "bearer",
+    "expires_in": 3600
+    }
+
+3. Protected Routes (GET /api/me)
+
+Authorization: Bearer your.jwt.token
